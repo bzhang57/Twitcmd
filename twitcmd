@@ -1,0 +1,136 @@
+#!/usr/bin/env python
+# By Bryan Zhang
+from twitter import *
+from Tkinter import *
+import sys
+
+
+t = Twitter(
+        auth=OAuth('255740829-6OqzpzKPMVJWVkJGHut424f3wXJrCxJj74SyFWMo', '7XolSkngPRBzFa5aXPRJbd2t4oF3MAkxvHonebdEfHQzQ',
+               'xDSG9LUD8XsgZiC33BRvUIF3h', 'szEMgTV7j58pfd8heFBNuzTMmKlMsHgC0OfqNAzbGclBobTyRi'))
+
+def showTweets(x, num):
+    for i in range(0, num):
+        line1 = (x[i]['user']['screen_name'])
+        line2 = (x[i]['text'])
+        print line1, ": ", line2
+        print ""
+
+def getUserTweets():
+
+    x = t.statuses.user_timeline(screen_name="bzhang57")
+    return x
+
+def getTimelineTweets():
+
+    timelineTweets = t.statuses.home_timeline(screen_name="bzhang57")
+    return timelineTweets
+
+def tweet():
+
+    global entryWidget
+
+    if entryWidget.get().strip() == "":
+        print("Empty")
+    else:
+        t.statuses.update(status=entryWidget.get().strip())
+        entryWidget.delete(0,END)
+        print("working")
+
+def goToMenu():
+    print "Menu: Enter a number:"
+    print "1: Show Timeline Tweets"
+    print "2: Show Your Tweets"
+    print "3: Show friends"
+    print "4: Search by Screen Name"
+
+    input = raw_input("Select a number!")
+    if input is "1":
+        numTweetsToShow = raw_input("How many tweets do you want to see? Enter a number: ")
+        timelineTweets = getTimelineTweets()
+        showTweets(timelineTweets, int(numTweetsToShow))
+
+    if input is "2":
+        numTweetsToShow = raw_input("How many tweets do you want to see? Enter a number: ")
+        userTweets = getUserTweets()
+        showTweets(userTweets, int(numTweetsToShow))
+
+    if input is "3":
+        friends = t.friends.list(screen_name = "bzhang57")['users']
+        print "You have", len(friends), "friends!"
+        for friend in friends:
+            print friend['name']
+
+    if input is "4":
+
+        userID = raw_input("ID of user: ")
+
+        friendships = t.friendships.lookup(screen_name=userID)
+        for friendship in friendships:
+            name = friendship['name']
+            print "The name of userID", userID, "is", name
+            connection = friendship['connections']
+            info = t.users.lookup(screen_name=userID)
+            print ""
+            print "Number followers:", info[0]['followers_count']
+            print "Description", info[0]['description']
+            if "following" in connection:
+                print "You are following", name
+            else:
+                print "You are NOT following", name
+            if "followed_by" in connection:
+                print name, "is following you"
+            else:
+                print name, "is NOT following you"
+
+
+if len(sys.argv) >= 2:
+    answer = sys.argv[1]
+
+    if answer == 'timeline':
+        if len(sys.argv) == 2:
+            numTweetsToShow = 10
+        else:
+            numTweetsToShow = sys.argv[2]
+        timelineTweets = getTimelineTweets()
+        showTweets(timelineTweets, int(numTweetsToShow))
+    elif answer == 'owntweets':
+        if len(sys.argv) == 2:
+            numTweetsToShow = 10
+        else:
+            numTweetsToShow = sys.argv[2]
+        timelineTweets = getUserTweets()
+        showTweets(timelineTweets, int(numTweetsToShow))
+    elif answer == 'showfriends':
+        friends = t.friends.list(screen_name="bzhang57")['users']
+        print "You have", len(friends), "friends!"
+        for friend in friends:
+            print friend['name']
+    elif answer == 'searchname':
+        if len(sys.argv) == 2:
+            userID = raw_input("ID of user: ")
+        else:
+            userID = sys.argv[2]
+        friendships = t.friendships.lookup(screen_name=userID)
+        for friendship in friendships:
+            name = friendship['name']
+            print "The name of userID", userID, "is", name
+            connection = friendship['connections']
+            info = t.users.lookup(screen_name=userID)
+            print ""
+            print "Number followers:", info[0]['followers_count']
+            print "Description", info[0]['description']
+            if "following" in connection:
+                print "You are following", name
+            else:
+                print "You are NOT following", name
+            if "followed_by" in connection:
+                print name, "is following you"
+            else:
+                print name, "is NOT following you"
+
+else:
+    goToMenu()
+
+
+
